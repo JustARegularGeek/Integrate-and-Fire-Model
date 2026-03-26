@@ -23,13 +23,12 @@ def calculate_voltage(time, voltage_0, current):
 
     return voltage_t
 
-def run_simulation():
+def run_simulation(current):
 
     # Initial State Variables
     t = 0
     spikes = []    # List to store the timestamp (ms) of each spike
     refractory_timer = 0    # Tracks elapsed time within the refractory period
-    current = 1    # Constant input current (nA)
 
     while t < TOTAL_TIME:
 
@@ -63,22 +62,25 @@ def run_simulation():
 
     return spikes
 
+current = 0.5
+while(current < 2.5):
+    # Run the simulation for 1nA
+    test_spikes = run_simulation(current)
 
-# Run the simulation for 1nA
-test_spikes = run_simulation()
+    if len(test_spikes) > 0:
+        # Time of the first spike event
+        first_spike = test_spikes[0]
+        
+        # Mean Inter-Spike Interval (ISI)
+        isi_values = np.diff(test_spikes)
+        mean_isi = np.mean(isi_values)
+        
+        # Total spike count over 1 second
+        total_spikes = len(test_spikes)
 
-if len(test_spikes) > 0:
-    # Time of the first spike event
-    first_spike = test_spikes[0]
-    
-    # Mean Inter-Spike Interval (ISI)
-    isi_values = np.diff(test_spikes)
-    mean_isi = np.mean(isi_values)
-    
-    # Total spike count over 1 second
-    total_spikes = len(test_spikes)
+        print(f"--- Results for {current:.1f}nA ---")
+        print(f"1. First Spike: {first_spike:.2f} ms")
+        print(f"2. Mean ISI:    {mean_isi:.2f} ms")
+        print(f"3. Total Spikes: {total_spikes}")
 
-    print(f"--- Results for 1nA ---")
-    print(f"1. First Spike: {first_spike:.2f} ms")
-    print(f"2. Mean ISI:    {mean_isi:.2f} ms")
-    print(f"3. Total Spikes: {total_spikes}")
+    current += 0.5    # Increase current by 0.5nA
