@@ -1,6 +1,7 @@
 from brian2 import *
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
 # Clear any objects from previous runs in the same session
 start_scope()
@@ -37,37 +38,66 @@ def run_simulation(current):
     G.v = v_start
 
     spike_monitor = SpikeMonitor(G)    # Records timestamps of spikes
-    state_monitor = StateMonitor(G, 'v', record=False)    # Records voltage of neuron index 0
 
     # Run the simulation for 1 second (1000ms)
     run(1000*ms)
 
-    return spike_monitor, state_monitor
+    return spike_monitor
+
+# Initialize the lists
+current_values = []
+risi_rates = []
+
+print("-" * 66)
+print(f"{'Current (nA)':<15} | {'1st Spike (ms)':<15} | {'Rate (Hz)':<15} | {'Total spikes':<15}")
+print("-" * 66)
 
 current = 0.5
-while(current < 2.5):
-    spike_monitor, state_monitor = run_simulation(current*nA)
+while current < 2.5: # Use <= to include the 2.5 nA data point
+    
+    # Run simulation and get the monitor
+    spike_monitor = run_simulation(current*nA)
+    
+    # Convert to ms
+    spike_times_ms = spike_monitor.t / ms
+    # Number of total spikes
+    total_spikes = len(spike_times_ms)
 
-    # Convert Brian2 units (seconds) to simple numpy floats (milliseconds)
-    spike_times = spike_monitor.t / ms 
-
-    if len(spike_times) > 0:
-        # Time of the first spike event
-        first_spike = spike_times[0]
-
-        # Mean Inter-Spike Interval (ISI)
-        if len(spike_times) > 1:
-            isi_values = np.diff(spike_times)
-            mean_isi = np.mean(isi_values)
+    if total_spikes > 0:
+        # Handle cases with spikes
+        first_spike = spike_times_ms[0]
+        
+        # Calculate risi (Rate)
+        if total_spikes > 1:
+            mean_isi = np.mean(np.diff(spike_times_ms)) 
+            rate = 1000.0 / mean_isi    # Convert ms to Hz
         else:
-            mean_isi = 0 
+            rate = 0.0
+    
+        # Store data for the graph
+        current_values.append(current)
+        risi_rates.append(rate)
 
-        # Total spike count over 1 second
-        total_spikes = len(spike_times)
+        print(f"{current:<15.1f} | {first_spike:<15.2f} | {rate:<15.2f} | {total_spikes}")
+    else:
+        # Handle cases with no spikes
+        current_values.append(current)
+        risi_rates.append(0.0)
+        print(f"{current:<15.1f} | {'No Spikes':<15} | {0.0:<15.2f} | {0}")
 
-        print(f"--- Results for {current:.1f}nA (Brian2) ---")
-        print(f"1. First Spike: {first_spike:.2f} ms")
-        print(f"2. Mean ISI:    {mean_isi:.2f} ms")
-        print(f"3. Total Spikes: {total_spikes}")
+    current += 0.5
 
-    current += 0.5    # Increase current by 0.5nA
+# Graphical Representation
+plt.figure(figsize=(8, 5))
+plt.plot(current_values, risi_rates, 'o-', color='navy', linewidth=2, markersize=8)
+
+plt.title('Firing Rate ($r_{ISI}$) vs. Constant Input Current')
+plt.xlabel('Input Current ($I_e$) [nA]')
+plt.ylabel('Firing Rate [Hz]')
+plt.grid(True, linestyle=':', alpha=0.7)
+
+# Save the graphical representation as an image
+plt.savefig('firing_rate_analysis_brian2.png')
+
+# Display the result
+plt.show()
