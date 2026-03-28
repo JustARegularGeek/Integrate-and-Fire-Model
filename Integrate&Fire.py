@@ -1,17 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-# Physical Constants (Constants as defined in the assignment)
-T = 30            # Membrane time constant (τm) in ms
-V_RESET = -65     # Reset/Resting potential (EL) in mV
-V_THRESHOLD = -50 # Firing threshold (Vth) in mV
-R = 90            # Membrane resistance (Rm) in MΩ
+# Physical Constants
+TIME_CONSTANT = 30      # Membrane time constant (τm) in ms
+RESET_VOLTAGE = -65     # Reset/Resting potential (EL) in mV
+THRESHOLD_VOLTAGE = -50 # Firing threshold (Vth) in mV
+RESISTANCE = 90         # Membrane resistance (Rm) in MΩ
+REFRACTORY_PERIOD = 2.0 # Refractory period in ms
 
 # Simulation Parameters
-TIME_STEP = 0.1       # Integration time step (dt) in ms
-TOTAL_TIME = 1000     # Total simulation duration (1000 ms = 1 sec)
-T_REFRACTORY = 2.0    # Refractory period in ms
-V_START = -67         # Initial membrane voltage
+TIME_STEP = 0.1         # Integration time step (dt) in ms
+TOTAL_TIME = 1000       # Total simulation duration (1000 ms = 1 sec)
+START_VOLTAGE = -67     # Initial membrane voltage
 
 def calculate_voltage(time, voltage_0, current):
     """
@@ -19,8 +19,8 @@ def calculate_voltage(time, voltage_0, current):
     V(t) = EL + Rm*Ie + (V(0) - EL - Rm*Ie) * exp(-t/τm)
     Units: time (ms), voltage_0 (mV), current (nA)
     """
-    exponent = np.exp(-time/T)
-    voltage_t = V_RESET + R*current + (voltage_0 - V_RESET - R*current)*exponent
+    exponent = np.exp(-time/TIME_CONSTANT)
+    voltage_t = RESET_VOLTAGE + RESISTANCE*current + (voltage_0 - RESET_VOLTAGE - RESISTANCE*current)*exponent
 
     return voltage_t
 
@@ -34,29 +34,29 @@ def run_simulation(current):
     while t < TOTAL_TIME:
 
         # 1. Check if the neuron is currently in a refractory state
-        if(refractory_timer < T_REFRACTORY):   #if refractory period did not pass, the membrane voltage is the resting membrane voltage
-            voltage = V_RESET
+        if(refractory_timer < REFRACTORY_PERIOD):   #if refractory period did not pass, the membrane voltage is the resting membrane voltage
+            voltage = RESET_VOLTAGE
             refractory_timer += TIME_STEP
 
         else:  
             # 2. Determine the time elapsed since the last 'active' state
             if len(spikes) == 0:   
                 # Before the first spike, we calculate from t=0 
-                voltage = V_START       
+                voltage = START_VOLTAGE       
                 charging_time = t   
             else:  
                 # After a spike, we calculate time relative to when the refractory period ended
-                voltage = V_RESET   # reset the voltage
-                charging_time = t - (spikes[-1] + T_REFRACTORY)    # time since the previous spike
+                voltage = RESET_VOLTAGE   # reset the voltage
+                charging_time = t - (spikes[-1] + REFRACTORY_PERIOD)    # time since the previous spike
 
             # 3. Calculate current membrane potential using the analytical formula
             voltage = calculate_voltage(charging_time, voltage, current)  
 
             # 4. Check for threshold crossing (Spike detection)
-            if voltage >= V_THRESHOLD:  # check if voltage has reached threshold
+            if voltage >= THRESHOLD_VOLTAGE:  # check if voltage has reached threshold
                 spikes.append(t)    # Record the spike time
                 refractory_timer = 0    # Enter refractory period immediately
-                voltage = V_RESET    # Reset voltage for the next step
+                voltage = RESET_VOLTAGE    # Reset voltage for the next step
         
         # Advance simulation time
         t += TIME_STEP

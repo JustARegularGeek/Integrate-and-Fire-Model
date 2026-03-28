@@ -8,18 +8,21 @@ start_scope()
 # Use numpy for code generation to avoid C++ assertion errors on this system
 prefs.codegen.target = 'numpy'
 
-# Physical Model Parameters
-tau = 30*ms               # Membrane time constant (τm)
-v_reset = -65*mV          # Reset/Resting potential (EL = Vreset)
-v_threshold = -50*mV      # Firing threshold (Vth)
-R = 90*Mohm               # Membrane resistance (Rm)
-v_start = -67*mV          # Initial membrane voltage
-refractory_period = 2*ms  # Absolute refractory period duration
+# Physical Constants
+TIME_CONSTANT = 30*ms      # Membrane time constant (τm)
+RESET_VOLTAGE = -65*mV     # Reset/Resting potential (EL = Vreset)
+THRESHOLD_VOLTAGE = -50*mV # Firing threshold (Vth)
+RESISTANCE = 90*Mohm       # Membrane resistance (Rm)
+REFRACTORY_PERIOD = 2*ms   # Absolute refractory period duration
+
+# Simulation Parameters
+TOTAL_TIME = 1000*ms       # Total simulation duration (1000 ms = 1 sec)
+START_VOLTAGE = -67*mV     # Initial membrane voltage
 
 def calculate_voltage(current):
     # Leaky Integrate-and-Fire Differential Equation
-    # (unless refractory): Forces v to stay at v_reset during the 2ms break
-    voltage = '''dv/dt = ( (v_reset - v) + R*current ) / tau : volt (unless refractory)'''
+    # (unless refractory): Forces v to stay at RESET_VOLTAGE during the 2ms break
+    voltage = '''dv/dt = ( (RESET_VOLTAGE - v) + RESISTANCE*current ) / TIME_CONSTANT : volt (unless refractory)'''
 
     return voltage
 
@@ -32,15 +35,15 @@ def run_simulation(current):
 
     # Create a group consisting of 1 neuron
     # method='exact': Since the EQ is linear, Brian2 solves it analytically
-    G = NeuronGroup(1, voltage, threshold='v > v_threshold', reset='v = v_reset', refractory=refractory_period, method='exact')
+    G = NeuronGroup(1, voltage, threshold='v > THRESHOLD_VOLTAGE', reset='v = RESET_VOLTAGE', refractory=REFRACTORY_PERIOD, method='exact')
 
     # Initialize voltage
-    G.v = v_start
+    G.v = START_VOLTAGE
 
     spike_monitor = SpikeMonitor(G)    # Records timestamps of spikes
 
     # Run the simulation for 1 second (1000ms)
-    run(1000*ms)
+    run(TOTAL_TIME)
 
     return spike_monitor
 
