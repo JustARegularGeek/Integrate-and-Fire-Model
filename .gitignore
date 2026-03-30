@@ -1,0 +1,19 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+.venv/
+env/
+
+# Plot outputs (keeps your repo from filling with images)
+*.png
+*.jpg
+*.jpeg
+*.pdf
+
+# Operating system files
+.DS_Store
+Thumbs.db

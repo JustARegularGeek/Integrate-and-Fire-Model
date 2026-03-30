@@ -41,25 +41,26 @@ def run_simulation(current):
     G.v = START_VOLTAGE
 
     spike_monitor = SpikeMonitor(G)    # Records timestamps of spikes
+    state_monitor = StateMonitor(G, 'v', record=True)    #
 
     # Run the simulation for 1 second (1000ms)
     run(TOTAL_TIME)
 
-    return spike_monitor
+    return spike_monitor, state_monitor
 
 # Initialize the lists
 current_values = []
 risi_rates = []
 
-print("-" * 66)
-print(f"{'Current (nA)':<15} | {'1st Spike (ms)':<15} | {'Rate (Hz)':<15} | {'Total spikes':<15}")
-print("-" * 66)
+print("=" * 72)
+print(f"{'Current (nA)':>12} | {'1st Spike (ms)':>14} | {'Mean ISI (ms)':>13} | {'Rate (Hz)':>10} | {'Total':>6}")
+print("=" * 72)
 
 current = 0.5
-while current < 2.5: # Use <= to include the 2.5 nA data point
+while current < 2.5:
     
     # Run simulation and get the monitor
-    spike_monitor = run_simulation(current*nA)
+    spike_monitor, state_monitor = run_simulation(current*nA)
     
     # Convert to ms
     spike_times_ms = spike_monitor.t / ms
@@ -81,18 +82,41 @@ while current < 2.5: # Use <= to include the 2.5 nA data point
         current_values.append(current)
         risi_rates.append(rate)
 
-        print(f"{current:<15.1f} | {first_spike:<15.2f} | {rate:<15.2f} | {total_spikes}")
+        # Print clean table row
+        print(f"{current:>12.1f} | {first_spike:>14.2f} | {mean_isi:>13.2f} | {rate:>10.2f} | {total_spikes:>6}")
     else:
         # Handle cases with no spikes
         current_values.append(current)
         risi_rates.append(0.0)
-        print(f"{current:<15.1f} | {'No Spikes':<15} | {0.0:<15.2f} | {0}")
+        print(f"{current:>12.1f} | {'No Spikes':>14} | {'---':>13} | {'---':>10} | {'0':>6}")
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(state_monitor.t/ms, state_monitor.v[0]/mV, color='darkslateblue', linewidth=1.5)
+    
+    # Add visual guides
+    plt.axhline(THRESHOLD_VOLTAGE/mV, color='darkred', linestyle='--', alpha=0.6, label='Threshold')
+    plt.axhline(RESET_VOLTAGE/mV, color='black', linestyle=':', alpha=0.4, label='Reset')
+    
+    plt.title(f'Membrane Potential Trace - Current: {current}nA')
+    plt.xlabel('Time (ms)')
+    plt.ylabel('Voltage (mV)')
+    plt.xlim(0, 200)    # Zoom in to see the spikes clearly
+    plt.legend(loc='upper right')
+    plt.grid(True, alpha=0.2)
+
+    # Save the graphical representation as an image
+    plt.savefig(f'spike_representation_brian2{current:.1f}nA.png')
+    
+    plt.show()     
+    plt.close()     # Clears memory for the next loop
 
     current += 0.5
 
+print("=" * 72)  # bottom border
+
 # Graphical Representation
 plt.figure(figsize=(8, 5))
-plt.plot(current_values, risi_rates, 'o-', color='navy', linewidth=2, markersize=8)
+plt.plot(current_values, risi_rates, 'o-', color='darkslateblue', linewidth=2, markersize=8)
 
 plt.title('Firing Rate ($r_{ISI}$) vs. Constant Input Current')
 plt.xlabel('Input Current ($I_e$) [nA]')
