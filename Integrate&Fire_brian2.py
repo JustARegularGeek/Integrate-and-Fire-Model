@@ -2,6 +2,8 @@ from brian2 import *
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Clear any objects from previous runs in the same session
 start_scope()
@@ -105,7 +107,7 @@ while current < 2.5:
     plt.grid(True, alpha=0.2)
 
     # Save the graphical representation as an image
-    plt.savefig(f'spike_representation_brian2{current:.1f}nA.png')
+    plt.savefig(os.path.join(SCRIPT_DIR,f'spike_representation_brian2{current:.1f}nA.png'))
     
     plt.show()     
     plt.close()     # Clears memory for the next loop
@@ -124,7 +126,7 @@ plt.ylabel('Firing Rate [Hz]')
 plt.grid(True, linestyle=':', alpha=0.7)
 
 # Save the graphical representation as an image
-plt.savefig('firing_rate_analysis_brian2.png')
+plt.savefig(os.path.join(SCRIPT_DIR,'firing_rate_analysis_brian2.png'))
 
 # Display the result
 plt.show()

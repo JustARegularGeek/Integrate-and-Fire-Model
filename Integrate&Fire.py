@@ -1,5 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Physical Constants
 TIME_CONSTANT = 30      # Membrane time constant (τm) in ms
@@ -122,8 +124,8 @@ while current < 2.5:
     plt.grid(True, alpha=0.2)
 
     # Save the graphical representation as an image
-    plt.savefig(f'spike_representation{current:.1f}nA.png')
-    
+    plt.savefig(os.path.join(SCRIPT_DIR, f'spike_representation{current:.1f}nA.png'))  
+
     plt.show()    
     plt.close()    # Clears memory for the next loop
 
@@ -141,7 +143,7 @@ plt.ylabel('Firing Rate [Hz]')
 plt.grid(True, linestyle=':', alpha=0.7)
 
 # Save the graphical representation as an image
-plt.savefig('firing_rate_analysis.png')
+plt.savefig(os.path.join(SCRIPT_DIR,'firing_rate_analysis.png'))
 
 # Display the result
 plt.show()
