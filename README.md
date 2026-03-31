@@ -46,8 +46,7 @@ This script uses the **Brian2 simulator**, a industry-standard library for spiki
 ## Results
 
 ### Membrane Potential Traces
-The scripts generate voltage traces for various input currents (0.5nA to 2.5nA). You can observe the "sawtooth" pattern of the charging membrane and the flat lines representing the refractory periods.
-
+The scripts generate voltage traces for various input currents (0.5nA to 2.0nA). You can observe the characteristic exponential rise of the membrane potential toward the threshold, followed by an instantaneous reset to the resting potential and a brief flat segment representing the absolute refractory period during which the neuron cannot fire again.
 
 ### Firing Rate (F-I Curve)
 The simulation concludes by plotting the **Firing Rate (Hz) vs. Input Current (nA)**.
